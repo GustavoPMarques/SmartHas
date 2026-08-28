@@ -1,0 +1,44 @@
+<div class="topo">
+  <h1>Minhas Finanças</h1>
+  <button class="botao-sair" (click)="sair()">Sair</button>
+</div>
+
+<p class="erro" *ngIf="erro()">{{ erro() }}</p>
+
+<div class="cards">
+  <div class="card card-atual">
+    <span class="card-titulo">Saldo Atual</span>
+    <span class="card-valor">R$ {{ resumo().saldoAtual.toFixed(2) }}</span>
+  </div>
+  <div class="card card-previsto">
+    <span class="card-titulo">Saldo Previsto</span>
+    <span class="card-valor">R$ {{ resumo().saldoPrevisto.toFixed(2) }}</span>
+  </div>
+</div>
+
+<div class="seletor-mes">
+  <button (click)="mesAnterior()">◀</button>
+  <span>{{ nomesMeses[mes() - 1] }} / {{ ano() }}</span>
+  <button (click)="mesSeguinte()">▶</button>
+</div>
+
+<h2>Histórico de transações</h2>
+<a routerLink="/admin" class="botao-gerenciar">Gerenciar transações</a>
+
+<div *ngIf="carregando()" class="carregando">Carregando...</div>
+
+<ul class="lista-transacoes" *ngIf="!carregando()">
+  <li *ngFor="let t of transacoes()" class="item-transacao">
+    <div>
+      <p class="item-titulo">{{ t.titulo }}</p>
+      <p class="item-categoria">{{ t.categoria }} • {{ t.data }}</p>
+    </div>
+    <span [class.valor-renda]="t.tipo === 'RENDA'" [class.valor-despesa]="t.tipo === 'DESPESA'">
+      {{ t.tipo === 'RENDA' ? '+' : '-' }} R$ {{ t.valor.toFixed(2) }}
+    </span>
+  </li>
+
+  <li *ngIf="transacoes().length === 0" class="vazio">
+    Nenhuma transação encontrada para este mês.
+  </li>
+</ul>

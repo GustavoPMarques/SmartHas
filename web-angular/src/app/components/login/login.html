@@ -1,0 +1,38 @@
+<div class="container">
+  <div class="card">
+    <h1>Smart HAS</h1>
+    <p class="subtitulo">{{ modoCadastro ? 'Criar uma conta' : 'Entrar na sua conta' }}</p>
+
+    <form (ngSubmit)="enviar()" #loginForm="ngForm">
+      <label for="email">E-mail</label>
+      <input
+        id="email"
+        type="email"
+        name="email"
+        [(ngModel)]="email"
+        placeholder="seuemail@exemplo.com"
+        required
+      />
+
+      <label for="senha">Senha</label>
+      <input
+        id="senha"
+        type="password"
+        name="senha"
+        [(ngModel)]="senha"
+        placeholder="••••••••"
+        required
+      />
+
+      <p class="erro" *ngIf="mensagemErro">{{ mensagemErro }}</p>
+
+      <button type="submit" [disabled]="carregando">
+        {{ carregando ? 'Aguarde...' : (modoCadastro ? 'Criar conta' : 'Entrar') }}
+      </button>
+    </form>
+
+    <button class="link" (click)="alternarModo()">
+      {{ modoCadastro ? 'Já tem uma conta? Entrar' : 'Não tem uma conta? Criar conta' }}
+    </button>
+  </div>
+</div>

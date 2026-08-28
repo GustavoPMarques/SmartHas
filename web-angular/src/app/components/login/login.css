@@ -1,0 +1,86 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: #f5f5f5;
+}
+
+.card {
+  background: #fff;
+  padding: 32px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 360px;
+}
+
+h1 {
+  text-align: center;
+  color: #007AFF;
+  margin-bottom: 4px;
+}
+
+.subtitulo {
+  text-align: center;
+  color: #666;
+  margin-bottom: 24px;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin-top: 12px;
+  margin-bottom: 6px;
+}
+
+input {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 15px;
+}
+
+input:focus {
+  outline: none;
+  border-color: #007AFF;
+}
+
+.erro {
+  color: #c62828;
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+button[type="submit"] {
+  margin-top: 20px;
+  padding: 12px;
+  background: #007AFF;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.link {
+  display: block;
+  margin: 16px auto 0;
+  background: none;
+  border: none;
+  color: #007AFF;
+  font-size: 13px;
+  cursor: pointer;
+}
