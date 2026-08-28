@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @Data
 public class TransacaoRequestDTO {
 
-    // Sobrescrito pelo backend com o UID verificado do token — não precisa ser validado aqui.
+
     private String usuarioId;
 
     @NotBlank(message = "O título é obrigatório")

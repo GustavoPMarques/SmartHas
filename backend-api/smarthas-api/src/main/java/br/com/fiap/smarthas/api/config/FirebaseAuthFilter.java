@@ -12,11 +12,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
-/**
- * Verifica o token do Firebase enviado pelo app no header "Authorization: Bearer <idToken>".
- * Se válido, o UID autenticado fica em request.getAttribute("usuarioId") para os
- * controllers usarem — nunca confiamos em um usuarioId vindo de query param ou body.
- */
+
 @Component
 public class FirebaseAuthFilter extends OncePerRequestFilter {
 

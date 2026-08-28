@@ -44,7 +44,7 @@ public class TransacaoService {
             transacao.setData(dto.getData().plusMonths(i).toString());
             transacao.setTipo(dto.getTipo() != null ? dto.getTipo().name() : null);
             transacao.setCategoria(dto.getCategoria());
-            // Recorrência só faz sentido se NÃO for parcelado (parcelado já é finito e distribuído).
+
             transacao.setIsRecorrente(quantidadeParcelas == 1 && Boolean.TRUE.equals(dto.getIsRecorrente()));
             transacao.setParcelas(quantidadeParcelas);
 
@@ -106,7 +106,7 @@ public class TransacaoService {
             boolean recorrente = Boolean.TRUE.equals(t.getIsRecorrente());
 
             if (!recorrente) {
-                // Transação única (ou uma parcela específica): conta uma vez só, na sua data real.
+
                 if (!dataOriginal.isAfter(hoje)) {
                     saldoAtual += sinal * t.getValor();
                 }
@@ -135,8 +135,7 @@ public class TransacaoService {
         return new ResumoMensalDTO(saldoAtual, saldoPrevisto, totalRendasMes, totalDespesasMes);
     }
 
-    /** Conta quantas ocorrências mensais de uma recorrência já "aconteceram" até hoje,
-     *  considerando que a ocorrência do mês atual só conta se o dia já passou. */
+
     private long contarOcorrencias(LocalDate dataOriginal, YearMonth mesOriginal, YearMonth mesHoje, LocalDate hoje) {
         long mesesCompletos = ChronoUnit.MONTHS.between(mesOriginal, mesHoje); // meses anteriores ao atual, todos contam
         LocalDate dataProjetadaNoMesAtual = projetarDataNoMes(dataOriginal, mesHoje);
@@ -144,8 +143,7 @@ public class TransacaoService {
         return mesesCompletos + (ocorrenciaDoMesAtualJaPassou ? 1 : 0);
     }
 
-    /** Projeta o "mesmo dia" da data original para outro mês, ajustando para meses mais curtos
-     *  (ex: dia 31 de janeiro vira dia 28/29 em fevereiro). */
+
     private LocalDate projetarDataNoMes(LocalDate dataOriginal, YearMonth mesDestino) {
         int dia = Math.min(dataOriginal.getDayOfMonth(), mesDestino.lengthOfMonth());
         return mesDestino.atDay(dia);
@@ -211,7 +209,7 @@ public class TransacaoService {
 
         Transacao transacao = mapearDocumentoParaTransacao(snapshot);
 
-        // Garante que só o dono da transação pode editá-la.
+
         if (!usuarioIdAutenticado.equals(transacao.getUsuarioId())) {
             throw new AcessoNegadoException();
         }
@@ -222,7 +220,7 @@ public class TransacaoService {
         transacao.setTipo(dto.getTipo() != null ? dto.getTipo().name() : transacao.getTipo());
         transacao.setCategoria(dto.getCategoria());
         transacao.setIsRecorrente(Boolean.TRUE.equals(dto.getIsRecorrente()));
-        // parcelas, id e usuarioId não mudam numa edição simples
+
 
         docRef.set(transacao).get();
         return converterParaDTO(transacao, dto.getData());
@@ -239,7 +237,7 @@ public class TransacaoService {
 
         Transacao transacao = mapearDocumentoParaTransacao(snapshot);
 
-        // Garante que só o dono da transação pode excluí-la.
+
         if (!usuarioIdAutenticado.equals(transacao.getUsuarioId())) {
             throw new AcessoNegadoException();
         }

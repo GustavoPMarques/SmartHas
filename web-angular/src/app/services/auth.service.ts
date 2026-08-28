@@ -18,7 +18,7 @@ export class AuthService {
   private app = initializeApp(environment.firebaseConfig);
   private auth = getAuth(this.app);
 
-  // Guarda o usuário logado atual — qualquer componente pode "escutar" mudanças aqui.
+  
   private usuarioSubject = new BehaviorSubject<User | null>(null);
   usuario$: Observable<User | null> = this.usuarioSubject.asObservable();
   private usuarioProntoSubject = new BehaviorSubject<boolean>(false);
@@ -48,7 +48,7 @@ export class AuthService {
     return this.usuarioSubject.value;
   }
 
-  /** Pega o token do Firebase pra anexar nas chamadas à API (usado pelo interceptor abaixo). */
+  
   async obterToken(): Promise<string | null> {
     const usuario = this.usuarioAtual;
     if (!usuario) return null;

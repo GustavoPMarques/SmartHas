@@ -22,7 +22,7 @@ public class TransacaoController {
     @Autowired
     private TransacaoService service;
 
-    /** UID já verificado pelo FirebaseAuthFilter — nunca confiamos em usuarioId vindo do cliente. */
+
     private String usuarioAutenticado(HttpServletRequest request) {
         return (String) request.getAttribute("usuarioId");
     }

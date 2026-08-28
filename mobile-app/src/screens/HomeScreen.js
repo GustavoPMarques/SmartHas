@@ -11,7 +11,7 @@ const NOMES_MESES = [
 ];
 
 export default function HomeScreen({ route, navigation }) {
-  const usuarioId = route.params.usuarioId; // sempre vem do login real, sem fallback mocado
+  const usuarioId = route.params.usuarioId; 
 
   const hoje = new Date();
   const [ano, setAno] = useState(hoje.getFullYear());
@@ -53,10 +53,10 @@ export default function HomeScreen({ route, navigation }) {
 
   async function handleSair() {
     await signOut(auth);
-    // O MainNavigation detecta a saída e volta pra tela de Login automaticamente.
+    
   }
 
-  // Coloca o botão "Sair" no cabeçalho de navegação, do lado direito do título.
+  
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (

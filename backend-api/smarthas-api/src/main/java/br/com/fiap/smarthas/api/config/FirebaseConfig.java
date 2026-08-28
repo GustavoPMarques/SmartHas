@@ -15,8 +15,7 @@ public class FirebaseConfig {
     public void init() {
         try {
 
-            // Corrigido: o arquivo real se chama "ServiceAccountKey.json" (S maiúsculo).
-            // Em Linux o classpath é case-sensitive, então o nome precisa bater exatamente.
+
             InputStream serviceAccount = getClass().getClassLoader().getResourceAsStream("ServiceAccountKey.json");
 
             if (serviceAccount == null) {

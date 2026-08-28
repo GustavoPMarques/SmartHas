@@ -49,8 +49,7 @@ export default function CadastroScreen({ navigation }) {
     setCarregando(true);
     try {
       await createUserWithEmailAndPassword(auth, email.trim(), senha);
-      // A conta já entra logada automaticamente pelo Firebase.
-      // O MainNavigation detecta isso via onAuthStateChanged e leva para a Home sozinho.
+      
     } catch (error) {
       mostrarAlerta('Erro no Cadastro', traduzirErro(error.code));
     } finally {

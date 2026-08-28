@@ -4,8 +4,7 @@ import { auth } from './firebaseConfig';
 // Assim você não precisa editar o código toda vez que o IP da sua rede mudar.
 const API_URL = `${process.env.EXPO_PUBLIC_API_URL || 'http://192.168.15.3:8080'}/api/v1/transacoes`;
 
-/** Monta os headers com o token do Firebase. A API identifica o usuário pelo token
- *  (não mais por um usuarioId enviado solto na URL/body). */
+
 async function getAuthHeaders() {
   const usuario = auth.currentUser;
   if (!usuario) {

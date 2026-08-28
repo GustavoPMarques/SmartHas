@@ -41,8 +41,7 @@ export default function LoginScreen({ navigation }) {
     setCarregando(true);
     try {
       await signInWithEmailAndPassword(auth, email.trim(), senha);
-      // Não precisa navegar manualmente: o MainNavigation detecta o login
-      // automaticamente via onAuthStateChanged e troca de tela sozinho.
+      
     } catch (error) {
       mostrarAlerta('Erro no Login', traduzirErro(error.code));
     } finally {
