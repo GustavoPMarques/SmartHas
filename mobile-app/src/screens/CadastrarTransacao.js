@@ -23,12 +23,18 @@ export default function CadastrarTransacaoScreen({ route, navigation }) {
   const [parcelas, setParcelas] = useState('1');
 
   const [isRecorrente, setIsRecorrente] = useState(false);
+  const [salvando, setSalvando] = useState(false);
 
   async function handleSalvar() {
+    
+    if (salvando) return;
+
     if (!titulo || !valor || !categoria || !data) {
       mostrarAlerta('Atenção', 'Preencha todos os campos obrigatórios.');
       return;
     }
+
+    setSalvando(true);
 
     try {
       const payload = {
@@ -53,6 +59,7 @@ export default function CadastrarTransacaoScreen({ route, navigation }) {
     } catch (error) {
       console.log('Erro ao salvar:', error);
       mostrarAlerta('Erro', 'Não foi possível salvar a transação.');
+      setSalvando(false);
     }
   }
 
@@ -144,8 +151,12 @@ export default function CadastrarTransacaoScreen({ route, navigation }) {
         />
       </View>
 
-      <TouchableOpacity style={styles.botaoSalvar} onPress={handleSalvar}>
-        <Text style={styles.textoBotaoSalvar}>Salvar Transação</Text>
+      <TouchableOpacity
+        style={[styles.botaoSalvar, salvando && styles.botaoDesabilitado]}
+        onPress={handleSalvar}
+        disabled={salvando}
+      >
+        <Text style={styles.textoBotaoSalvar}>{salvando ? 'Salvando...' : 'Salvar Transação'}</Text>
       </TouchableOpacity>
 
       <View style={{ height: 40 }} />
@@ -167,5 +178,6 @@ const styles = StyleSheet.create({
   labelSwitch: { fontSize: 16, fontWeight: '600', color: '#333' },
   subLabel: { fontSize: 12, color: '#2e7d32', marginTop: 2, fontWeight: 'bold' },
   botaoSalvar: { backgroundColor: '#007AFF', padding: 15, borderRadius: 8, alignItems: 'center', marginTop: 24 },
+  botaoDesabilitado: { backgroundColor: '#99c2ff' },
   textoBotaoSalvar: { color: '#fff', fontSize: 16, fontWeight: 'bold' }
 });

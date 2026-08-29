@@ -9,6 +9,7 @@ export default function GerenciarTransacoesScreen({ route, navigation }) {
 
   const [transacoes, setTransacoes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [excluindoId, setExcluindoId] = useState(null);
 
   const titulo = tipo === 'RENDA' ? 'Gerenciar Rendas' : 'Gerenciar Despesas';
   const corDestaque = tipo === 'RENDA' ? '#2e7d32' : '#c62828';
@@ -46,13 +47,22 @@ export default function GerenciarTransacoesScreen({ route, navigation }) {
   }
 
   async function excluir(id) {
+    
+    if (excluindoId === id) return;
+
+    setExcluindoId(id);
     const sucesso = await excluirTransacao(id);
+
     if (sucesso) {
       setTransacoes((atual) => atual.filter((t) => t.id !== id));
-    } else if (Platform.OS === 'web') {
-      window.alert('Não foi possível excluir a transação.');
+      
     } else {
-      Alert.alert('Erro', 'Não foi possível excluir a transação.');
+      setExcluindoId(null);
+      if (Platform.OS === 'web') {
+        window.alert('Não foi possível excluir a transação.');
+      } else {
+        Alert.alert('Erro', 'Não foi possível excluir a transação.');
+      }
     }
   }
 
@@ -91,8 +101,14 @@ export default function GerenciarTransacoesScreen({ route, navigation }) {
               <Text style={[styles.itemValor, { color: corDestaque }]}>
                 R$ {item.valor?.toFixed(2)}
               </Text>
-              <TouchableOpacity onPress={() => confirmarExclusao(item)} style={styles.botaoExcluir}>
-                <Text style={styles.textoExcluir}>Excluir</Text>
+              <TouchableOpacity
+                onPress={() => confirmarExclusao(item)}
+                style={styles.botaoExcluir}
+                disabled={excluindoId === item.id}
+              >
+                <Text style={styles.textoExcluir}>
+                  {excluindoId === item.id ? 'Excluindo...' : 'Excluir'}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

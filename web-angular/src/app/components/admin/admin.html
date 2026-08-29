@@ -41,8 +41,10 @@
   </label>
 
   <div class="botoes-form">
-    <button type="submit" class="botao-salvar">{{ edicaoId ? 'Salvar alterações' : 'Cadastrar' }}</button>
-    <button type="button" class="botao-cancelar" *ngIf="edicaoId" (click)="cancelarEdicao()">Cancelar edição</button>
+    <button type="submit" class="botao-salvar" [disabled]="enviando()">
+      {{ enviando() ? 'Salvando...' : (edicaoId ? 'Salvar alterações' : 'Cadastrar') }}
+    </button>
+    <button type="button" class="botao-cancelar" *ngIf="edicaoId" (click)="cancelarEdicao()" [disabled]="enviando()">Cancelar edição</button>
   </div>
 </form>
 
@@ -63,8 +65,10 @@
       <span [class.valor-renda]="t.tipo === 'RENDA'" [class.valor-despesa]="t.tipo === 'DESPESA'">
         R$ {{ t.valor.toFixed(2) }}
       </span>
-      <button class="botao-editar" (click)="editar(t)">Editar</button>
-      <button class="botao-excluir" (click)="excluir(t)">Excluir</button>
+      <button class="botao-editar" (click)="editar(t)" [disabled]="excluindoId() === t.id">Editar</button>
+      <button class="botao-excluir" (click)="excluir(t)" [disabled]="excluindoId() === t.id">
+        {{ excluindoId() === t.id ? 'Excluindo...' : 'Excluir' }}
+      </button>
     </div>
   </li>
 

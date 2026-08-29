@@ -18,10 +18,12 @@ export class Admin implements OnInit {
   filtroTipo = signal<TipoTransacao>('DESPESA');
   transacoes = signal<Transacao[]>([]);
   carregando = signal(true);
+  enviando = signal(false);
+  excluindoId = signal<string | null>(null);
   erro = signal('');
   sucesso = signal('');
 
-  // Campos do formulário — cada um ligado ao input via [(ngModel)].
+  
   form = {
     titulo: '',
     valor: null as number | null,
@@ -59,6 +61,9 @@ export class Admin implements OnInit {
   }
 
   enviarForm() {
+    
+    if (this.enviando()) return;
+
     this.erro.set('');
     this.sucesso.set('');
 
@@ -66,6 +71,8 @@ export class Admin implements OnInit {
       this.erro.set('Preencha todos os campos obrigatórios.');
       return;
     }
+
+    this.enviando.set(true);
 
     const payload: TransacaoRequest = {
       titulo: this.form.titulo,
@@ -81,19 +88,27 @@ export class Admin implements OnInit {
       this.transacaoService.atualizar(this.edicaoId, payload).subscribe({
         next: () => {
           this.sucesso.set('Transação atualizada com sucesso!');
+          this.enviando.set(false);
           this.limparForm();
           this.carregarLista();
         },
-        error: () => this.erro.set('Não foi possível atualizar a transação.')
+        error: () => {
+          this.erro.set('Não foi possível atualizar a transação.');
+          this.enviando.set(false);
+        }
       });
     } else {
       this.transacaoService.cadastrar(payload).subscribe({
         next: () => {
           this.sucesso.set('Transação cadastrada com sucesso!');
+          this.enviando.set(false);
           this.limparForm();
           this.carregarLista();
         },
-        error: () => this.erro.set('Não foi possível cadastrar a transação.')
+        error: () => {
+          this.erro.set('Não foi possível cadastrar a transação.');
+          this.enviando.set(false);
+        }
       });
     }
   }
@@ -116,15 +131,24 @@ export class Admin implements OnInit {
   }
 
   excluir(t: Transacao) {
+    
+    if (this.excluindoId() === t.id) return;
+
     const confirmar = window.confirm(`Excluir "${t.titulo}"? Essa ação não pode ser desfeita.`);
     if (!confirmar) return;
+
+    this.excluindoId.set(t.id);
 
     this.transacaoService.excluir(t.id).subscribe({
       next: () => {
         this.sucesso.set('Transação excluída.');
+        this.excluindoId.set(null);
         this.carregarLista();
       },
-      error: () => this.erro.set('Não foi possível excluir a transação.')
+      error: () => {
+        this.erro.set('Não foi possível excluir a transação.');
+        this.excluindoId.set(null);
+      }
     });
   }
 

@@ -19,12 +19,18 @@ export default function EditarTransacaoScreen({ route, navigation }) {
   const [tipo, setTipo] = useState(transacao.tipo);
   const [categoria, setCategoria] = useState(transacao.categoria);
   const [isRecorrente, setIsRecorrente] = useState(!!transacao.isRecorrente);
+  const [salvando, setSalvando] = useState(false);
 
   async function handleAtualizar() {
+    
+    if (salvando) return;
+
     if (!titulo || !valor || !categoria || !data) {
       mostrarAlerta('Atenção', 'Preencha todos os campos obrigatórios.');
       return;
     }
+
+    setSalvando(true);
 
     try {
       const payload = {
@@ -47,6 +53,7 @@ export default function EditarTransacaoScreen({ route, navigation }) {
     } catch (error) {
       console.log('Erro ao atualizar:', error);
       mostrarAlerta('Erro', 'Não foi possível atualizar a transação.');
+      setSalvando(false);
     }
   }
 
@@ -92,8 +99,12 @@ export default function EditarTransacaoScreen({ route, navigation }) {
         <Switch value={isRecorrente} onValueChange={setIsRecorrente} />
       </View>
 
-      <TouchableOpacity style={styles.botaoSalvar} onPress={handleAtualizar}>
-        <Text style={styles.textoBotaoSalvar}>Salvar Alterações</Text>
+      <TouchableOpacity
+        style={[styles.botaoSalvar, salvando && styles.botaoDesabilitado]}
+        onPress={handleAtualizar}
+        disabled={salvando}
+      >
+        <Text style={styles.textoBotaoSalvar}>{salvando ? 'Salvando...' : 'Salvar Alterações'}</Text>
       </TouchableOpacity>
 
       <View style={{ height: 40 }} />
@@ -115,5 +126,6 @@ const styles = StyleSheet.create({
   switchRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', padding: 12, borderRadius: 8, borderWidth: 1, borderColor: '#ddd', marginTop: 14 },
   labelSwitch: { fontSize: 16, fontWeight: '600', color: '#333' },
   botaoSalvar: { backgroundColor: '#007AFF', padding: 15, borderRadius: 8, alignItems: 'center', marginTop: 24 },
+  botaoDesabilitado: { backgroundColor: '#99c2ff' },
   textoBotaoSalvar: { color: '#fff', fontSize: 16, fontWeight: 'bold' }
 });
