@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, ScrollView, Switch } from 'react-native';
 import { atualizarTransacao } from '../services/api';
+import DatePickerField from '../components/DatePickerField';
 
 function mostrarAlerta(titulo, mensagem) {
   if (Platform.OS === 'web') {
@@ -65,8 +66,8 @@ export default function EditarTransacaoScreen({ route, navigation }) {
       <Text style={styles.label}>Valor (R$)</Text>
       <TextInput style={styles.input} keyboardType="numeric" value={valor} onChangeText={setValor} />
 
-      <Text style={styles.label}>Data (AAAA-MM-DD)</Text>
-      <TextInput style={styles.input} value={data} onChangeText={setData} />
+      <Text style={styles.label}>Data</Text>
+      <DatePickerField style={styles.input} value={data} onChange={setData} />
 
       <Text style={styles.label}>Tipo</Text>
       <View style={styles.tipoContainer}>

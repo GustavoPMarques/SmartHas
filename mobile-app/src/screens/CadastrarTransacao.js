@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, ScrollView, Switch } from 'react-native';
 import { cadastrarTransacao } from '../services/api';
+import DatePickerField from '../components/DatePickerField';
 
 function mostrarAlerta(titulo, mensagem) {
   if (Platform.OS === 'web') {
@@ -84,14 +85,8 @@ export default function CadastrarTransacaoScreen({ route, navigation }) {
         onChangeText={setValor}
       />
 
-      <Text style={styles.label}>Data (AAAA-MM-DD)</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="2026-08-27"
-        placeholderTextColor="#888"
-        value={data}
-        onChangeText={setData}
-      />
+      <Text style={styles.label}>Data</Text>
+      <DatePickerField style={styles.input} value={data} onChange={setData} />
 
       <Text style={styles.label}>Tipo</Text>
       <View style={styles.tipoContainer}>
