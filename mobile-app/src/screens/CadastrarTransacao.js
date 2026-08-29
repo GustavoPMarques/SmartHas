@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, ScrollView, Switch } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { cadastrarTransacao } from '../services/api';
 import DatePickerField from '../components/DatePickerField';
 
@@ -13,6 +14,7 @@ function mostrarAlerta(titulo, mensagem) {
 
 export default function CadastrarTransacaoScreen({ route, navigation }) {
   const usuarioId = route.params.usuarioId;
+  const insets = useSafeAreaInsets();
 
   const [titulo, setTitulo] = useState('');
   const [valor, setValor] = useState('');
@@ -154,7 +156,7 @@ export default function CadastrarTransacaoScreen({ route, navigation }) {
         <Text style={styles.textoBotaoSalvar}>{salvando ? 'Salvando...' : 'Salvar Transação'}</Text>
       </TouchableOpacity>
 
-      <View style={{ height: 40 }} />
+      <View style={{ height: 40 + insets.bottom }} />
     </ScrollView>
   );
 }

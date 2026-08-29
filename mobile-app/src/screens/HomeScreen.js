@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useLayoutEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { signOut } from 'firebase/auth';
 import { auth } from '../services/firebaseConfig';
@@ -11,7 +12,8 @@ const NOMES_MESES = [
 ];
 
 export default function HomeScreen({ route, navigation }) {
-  const usuarioId = route.params.usuarioId; 
+  const usuarioId = route.params.usuarioId;
+  const insets = useSafeAreaInsets();
 
   const hoje = new Date();
   const [ano, setAno] = useState(hoje.getFullYear());
@@ -76,7 +78,7 @@ export default function HomeScreen({ route, navigation }) {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: 16 + insets.bottom }]}>
       <View style={styles.cardContainer}>
         <View style={[styles.card, { backgroundColor: '#e3f2fd' }]}>
           <Text style={styles.cardTitle}>Saldo Atual</Text>
