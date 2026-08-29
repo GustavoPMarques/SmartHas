@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://SEU_IP_AQUI:8080/api/v1/transacoes',
+  apiUrl: 'https://smarthas.onrender.com/api/v1/transacoes',
   firebaseConfig: {
     apiKey: "AIzaSyAfF3-Xodpmq8SUqfCrcEtiFy2I3EHmZR4",
     authDomain: "backend-smarthas.firebaseapp.com",
