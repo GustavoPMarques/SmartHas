@@ -1,50 +1,57 @@
-# Welcome to your Expo app 👋
+# Smart HAS — App Mobile
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicativo React Native (Expo) para gestão de finanças pessoais: cadastro de rendas e despesas, resumo mensal, transações recorrentes e parceladas.
 
-## Get started
+## Tecnologias
 
-1. Install dependencies
+- React Native + Expo
+- React Navigation (navegação entre telas)
+- Firebase Authentication (login/cadastro)
+- @react-native-community/datetimepicker (seletor de data nativo)
 
-   ```bash
+## Pré-requisitos
+
+- Node.js instalado
+- App Expo Go instalado no celular (Android: Play Store / iOS: App Store)
+
+## Configuração
+
+1. Instale as dependências:
    npm install
-   ```
 
-2. Start the app
+2. Copie o arquivo de exemplo de variáveis de ambiente:
+   cp .env.example .env
 
-   ```bash
-   npx expo start
-   ```
+   O .env.example já vem apontando para o backend hospedado (https://smarthas.onrender.com), então na maioria dos casos você não precisa editar nada. Só troque a URL se for rodar o backend localmente (veja o README do backend-api).
 
-In the output, you'll find options to open the app in a
+## Rodando o projeto
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+npx expo start
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Escaneie o QR code exibido no terminal com o app Expo Go. Se estiver testando em uma rede diferente da sua máquina de desenvolvimento, use:
 
-## Get a fresh project
+npx expo start --tunnel
 
-When you're ready, run:
+Se mudar o .env, sempre reinicie com -c para limpar o cache:
 
-```bash
-npm run reset-project
-```
+npx expo start -c
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+## Estrutura de pastas
 
-## Learn more
+src/
+├── components/       → Componentes reutilizáveis (ex: DatePickerField)
+├── navigation/        → Configuração de rotas (MainNavigation.js)
+├── screens/           → Telas do app (Login, Home, Cadastrar/Editar Transação, etc.)
+└── services/          → Comunicação com Firebase e com a API (api.js, firebaseConfig.js)
 
-To learn more about developing your project with Expo, look at the following resources:
+## Funcionalidades
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Cadastro e login de usuários (Firebase Auth)
+- Sessão persistente entre reinicializações do app
+- Cadastro de transações (renda/despesa), com suporte a:
+  - Parcelamento (divide o valor em N transações mensais)
+  - Recorrência (repete todo mês, sem data final)
+- Seletor de data nativo (calendário do sistema operacional)
+- Resumo mensal (saldo atual x saldo previsto)
+- Edição e exclusão de transações
+- Navegação por mês (setas para avançar/voltar)
