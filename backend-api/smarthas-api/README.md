@@ -33,6 +33,14 @@ API REST em Java/Spring Boot responsável por toda a lógica de negócio e persi
 
 Aguarde a mensagem "Started SmarthasApiApplication" no terminal. A API sobe em http://localhost:8080.
 
+### Rodando os testes
+
+O projeto tem testes automatizados para a camada de controllers (`@WebMvcTest`) e services (Mockito), cobrindo validação de entrada, regras de negócio e verificação de posse das transações.
+
+./mvnw test
+
+Não é necessário configurar o Firebase para rodar os testes — os testes de controller mockam o service, e os testes de service mockam o Firestore diretamente, sem depender de credenciais reais.
+
 ## Endpoints principais
 
 Todos sob o prefixo /api/v1/transacoes:
@@ -64,3 +72,5 @@ O projeto inclui um Dockerfile pronto para deploy no Render:
 - Variável de ambiente: FIREBASE_CREDENTIALS_PATH=/etc/secrets/ServiceAccountKey.json
 
 O application.properties já está configurado para usar a porta dinâmica fornecida pelo Render (server.port=${PORT:8080}).
+
+
