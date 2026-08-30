@@ -3,7 +3,6 @@
   max-width: 700px;
   margin: 0 auto;
   padding: 24px 16px;
-  font-family: inherit;
 }
 
 .topo {
@@ -13,10 +12,7 @@
   margin-bottom: 20px;
 }
 
-h1 {
-  font-size: 22px;
-  color: #222;
-}
+h1 { font-size: 22px; color: #222; }
 
 .botao-sair {
   background: none;
@@ -37,116 +33,99 @@ h1 {
   font-size: 14px;
 }
 
-.cards {
+.filtro-ano {
   display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.card {
-  flex: 1;
-  padding: 16px;
-  border-radius: 10px;
-}
-
-.card-atual { background: #e3f2fd; }
-.card-previsto { background: #e8f5e9; }
-
-.card-titulo {
-  display: block;
-  font-size: 13px;
-  color: #555;
-  margin-bottom: 6px;
-}
-
-.card-valor {
-  display: block;
-  font-size: 20px;
-  font-weight: bold;
-  color: #222;
-}
-
-.seletor-mes {
-  display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 20px;
+  justify-content: center;
+  gap: 16px;
   margin-bottom: 24px;
 }
 
-.seletor-mes button {
+.seta-ano {
   background: none;
   border: none;
   color: #007AFF;
-  font-size: 16px;
+  font-size: 18px;
   font-weight: bold;
   cursor: pointer;
+  padding: 8px;
 }
 
-.seletor-mes span {
-  font-size: 17px;
+.input-ano {
+  width: 90px;
+  text-align: center;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+  font-size: 16px;
   font-weight: bold;
   color: #333;
+
 }
 
-h2 {
-  font-size: 16px;
-  color: #333;
-  margin-bottom: 12px;
+
+.input-ano::-webkit-outer-spin-button,
+.input-ano::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .carregando {
   text-align: center;
   color: #888;
-  padding: 30px 0;
+  padding: 40px 0;
 }
 
-.lista-transacoes {
-  list-style: none;
-  padding: 0;
-}
-
-.item-transacao {
+.grafico-container {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 28px;
   background: #fff;
-  padding: 14px;
-  border-radius: 8px;
-  margin-bottom: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  margin-bottom: 20px;
+  flex-wrap: wrap;
 }
 
-.item-titulo {
-  font-size: 15px;
-  font-weight: 600;
+.grafico-pizza {
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.legenda {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.legenda-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
   color: #333;
 }
 
-.item-categoria {
-  font-size: 12px;
-  color: #777;
-  margin-top: 2px;
+.bolinha {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
 }
 
-.valor-renda {
-  color: #2e7d32;
-  font-weight: bold;
-}
-
-.valor-despesa {
-  color: #c62828;
-  font-weight: bold;
-}
+.bolinha-renda { background: #2e7d32; }
+.bolinha-despesa { background: #c62828; }
 
 .vazio {
   text-align: center;
   color: #888;
-  padding: 30px 0;
-  list-style: none;
+  margin-bottom: 20px;
 }
 
-.botao-gerenciar {
+.botao-ver-lista {
   display: block;
   text-align: center;
   background: #007AFF;
@@ -155,5 +134,4 @@ h2 {
   border-radius: 8px;
   text-decoration: none;
   font-weight: bold;
-  margin-top: 20px;
 }

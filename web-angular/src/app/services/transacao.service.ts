@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { Transacao, TransacaoRequest, ResumoMensal, TipoTransacao } from '../models/transacao.model';
 
@@ -21,6 +22,16 @@ export class TransacaoService {
 
   listarPorTipo(tipo: TipoTransacao): Observable<Transacao[]> {
     return this.http.get<Transacao[]>(`${this.apiUrl}/tipo/${tipo}`);
+  }
+
+ 
+  listarTodas(): Observable<Transacao[]> {
+    return forkJoin([
+      this.listarPorTipo('RENDA'),
+      this.listarPorTipo('DESPESA')
+    ]).pipe(
+      map(([rendas, despesas]) => [...rendas, ...despesas])
+    );
   }
 
   cadastrar(dados: TransacaoRequest): Observable<Transacao[]> {

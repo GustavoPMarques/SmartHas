@@ -5,40 +5,31 @@
 
 <p class="erro" *ngIf="erro()">{{ erro() }}</p>
 
-<div class="cards">
-  <div class="card card-atual">
-    <span class="card-titulo">Saldo Atual</span>
-    <span class="card-valor">R$ {{ resumo().saldoAtual.toFixed(2) }}</span>
-  </div>
-  <div class="card card-previsto">
-    <span class="card-titulo">Saldo Previsto</span>
-    <span class="card-valor">R$ {{ resumo().saldoPrevisto.toFixed(2) }}</span>
-  </div>
+<div class="filtro-ano">
+  <button (click)="anoAnterior()" class="seta-ano">◀</button>
+  <input type="number" name="ano" [(ngModel)]="anoSelecionado" class="input-ano" />
+  <button (click)="anoSeguinte()" class="seta-ano">▶</button>
 </div>
-
-<div class="seletor-mes">
-  <button (click)="mesAnterior()">◀</button>
-  <span>{{ nomesMeses[mes() - 1] }} / {{ ano() }}</span>
-  <button (click)="mesSeguinte()">▶</button>
-</div>
-
-<h2>Histórico de transações</h2>
-<a routerLink="/admin" class="botao-gerenciar">Gerenciar transações</a>
 
 <div *ngIf="carregando()" class="carregando">Carregando...</div>
 
-<ul class="lista-transacoes" *ngIf="!carregando()">
-  <li *ngFor="let t of transacoes()" class="item-transacao">
-    <div>
-      <p class="item-titulo">{{ t.titulo }}</p>
-      <p class="item-categoria">{{ t.categoria }} • {{ t.data }}</p>
-    </div>
-    <span [class.valor-renda]="t.tipo === 'RENDA'" [class.valor-despesa]="t.tipo === 'DESPESA'">
-      {{ t.tipo === 'RENDA' ? '+' : '-' }} R$ {{ t.valor.toFixed(2) }}
-    </span>
-  </li>
+<div *ngIf="!carregando()" class="dashboard">
+  <div class="grafico-container">
+    <div class="grafico-pizza" [style.background]="graficoBackground"></div>
 
-  <li *ngIf="transacoes().length === 0" class="vazio">
-    Nenhuma transação encontrada para este mês.
-  </li>
-</ul>
+    <div class="legenda">
+      <div class="legenda-item">
+        <span class="bolinha bolinha-renda"></span>
+        Receitas — R$ {{ totalRenda.toFixed(2) }} ({{ percentualRenda }}%)
+      </div>
+      <div class="legenda-item">
+        <span class="bolinha bolinha-despesa"></span>
+        Despesas — R$ {{ totalDespesa.toFixed(2) }} ({{ 100 - percentualRenda }}%)
+      </div>
+    </div>
+  </div>
+
+  <p *ngIf="transacoesDoAno.length === 0" class="vazio">Nenhuma transação encontrada em {{ anoSelecionado }}.</p>
+
+  <a routerLink="/transacoes" class="botao-ver-lista">Ver lista completa de transações</a>
+</div>

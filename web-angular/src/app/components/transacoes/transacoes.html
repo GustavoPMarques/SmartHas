@@ -1,1 +1,40 @@
-<p>transacoes works!</p>
+<div class="topo">
+  <h1>Todas as Transações</h1>
+  <a routerLink="/home" class="link-voltar">← Voltar ao resumo</a>
+</div>
+
+<p class="mensagem erro" *ngIf="erro()">{{ erro() }}</p>
+
+<div class="filtros">
+  <div class="filtro-ano">
+    <button (click)="anoAnterior()" class="seta-ano">◀</button>
+    <input type="number" name="ano" [(ngModel)]="anoSelecionado" class="input-ano" />
+    <button (click)="anoSeguinte()" class="seta-ano">▶</button>
+  </div>
+
+  <div class="abas">
+    <button [class.ativo]="filtroTipo === 'TODOS'" (click)="filtroTipo = 'TODOS'">Todas</button>
+    <button [class.ativo]="filtroTipo === 'RENDA'" (click)="filtroTipo = 'RENDA'">Receitas</button>
+    <button [class.ativo]="filtroTipo === 'DESPESA'" (click)="filtroTipo = 'DESPESA'">Despesas</button>
+  </div>
+</div>
+
+<div *ngIf="carregando()" class="carregando">Carregando...</div>
+
+<ul class="lista-transacoes" *ngIf="!carregando()">
+  <li *ngFor="let t of transacoesFiltradas" class="item-transacao">
+    <div>
+      <p class="item-titulo">{{ t.titulo }}</p>
+      <p class="item-categoria">
+        {{ t.categoria }} • {{ t.data }}
+        <span *ngIf="t.isRecorrente"> • recorrente</span>
+        <span *ngIf="t.parcelas > 1"> • {{ t.parcelas }}x</span>
+      </p>
+    </div>
+    <span [class.valor-renda]="t.tipo === 'RENDA'" [class.valor-despesa]="t.tipo === 'DESPESA'">
+      {{ t.tipo === 'RENDA' ? '+' : '-' }} R$ {{ t.valor.toFixed(2) }}
+    </span>
+  </li>
+
+  <li *ngIf="transacoesFiltradas.length === 0" class="vazio">Nenhuma transação encontrada.</li>
+</ul>
