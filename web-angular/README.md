@@ -1,12 +1,13 @@
 # Smart HAS — Painel Web (Angular)
 
-Dashboard administrativo em Angular para gerenciar as transações do Smart HAS pelo navegador, consumindo a mesma API REST usada pelo app mobile.
+Dashboard de acompanhamento financeiro em Angular, somente leitura, que consome a mesma API REST usada pelo app mobile. Ideal para visualizar de forma rápida como estão as finanças, sem precisar abrir o celular.
 
 ## Tecnologias
 
 - Angular (standalone components, signals)
 - Firebase Authentication (login/cadastro)
 - HttpClient + Interceptor (comunicação autenticada com a API)
+- Gráfico de pizza feito em CSS puro (conic-gradient), sem bibliotecas externas de gráficos
 
 ## Pré-requisitos
 
@@ -35,27 +36,40 @@ Abra http://localhost:4200 no navegador. O Angular só lê o environment.ts na i
 
 src/app/
 ├── components/
-│   ├── login/       → Tela de login/cadastro
-│   ├── home/        → Dashboard com resumo mensal e histórico
-│   └── admin/        → Gerenciamento de transações (cadastro, edição, exclusão)
-├── guards/            → Proteção de rotas autenticadas (auth-guard)
-├── interceptors/      → Anexa o token do Firebase em toda chamada HTTP
-├── services/          → AuthService e TransacaoService
-└── models/            → Interfaces TypeScript (Transacao, ResumoMensal, etc.)
+│   ├── login/         → Tela de login/cadastro
+│   ├── home/           → Dashboard: gráfico de pizza + resumo do ano selecionado
+│   └── transacoes/     → Lista completa de transações, somente leitura
+├── guards/              → Proteção de rotas autenticadas (auth-guard)
+├── interceptors/        → Anexa o token do Firebase em toda chamada HTTP
+├── services/            → AuthService e TransacaoService
+└── models/              → Interfaces TypeScript (Transacao, ResumoMensal, etc.)
 
 ## Rotas
 
 | Rota | Descrição | Protegida? |
 |---|---|---|
 | /login | Login e cadastro de usuário | Não |
-| /home | Resumo mensal e histórico de transações | Sim |
-| /admin | Cadastro, edição e exclusão de transações | Sim |
+| /home | Dashboard com gráfico de pizza (Receitas x Despesas) | Sim |
+| /transacoes | Lista completa de transações do usuário, filtrável | Sim |
 
 Rotas protegidas exigem um usuário autenticado (verificado pelo authGuard); sem sessão ativa, o usuário é redirecionado para /login.
 
-## Funcionalidades demonstradas
+## Funcionalidades
+
+- Login e cadastro via Firebase Auth
+- Dashboard (/home):
+  - Gráfico de pizza mostrando a proporção entre Receitas e Despesas do ano selecionado
+  - Filtro de ano com setas de navegação (◀ ano ▶) e campo editável via [(ngModel)]
+  - Transações recorrentes contam automaticamente em todos os anos seguintes ao de seu cadastro
+- Lista completa (/transacoes):
+  - Todas as transações do usuário logado, com o mesmo filtro de ano
+  - Abas para filtrar por tipo (Todas / Receitas / Despesas)
+  - Somente leitura — cadastro, edição e exclusão só são feitos pelo app mobile
+
+## Funcionalidades demonstradas (requisitos técnicos)
 
 - Data binding: interpolação ({{ }}), property binding ([ ]), event binding (( )) e two-way binding ([( )])
 - Diretivas estruturais *ngIf e *ngFor
-- Formulário reativo simples com [(ngModel)] (cadastro/edição de transação)
-- Feedback visual de carregamento, sucesso e erro em todas as telas
+- Formulário funcional com [(ngModel)]: o campo de filtro por ano
+- Rotas configuradas com proteção por autenticação (authGuard)
+- Feedback visual de carregamento, erro e estado vazio em todas as telas
