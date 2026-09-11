@@ -55,7 +55,6 @@ export default function HomeScreen({ route, navigation }) {
 
   async function handleSair() {
     await signOut(auth);
-    
   }
 
   
@@ -107,6 +106,14 @@ export default function HomeScreen({ route, navigation }) {
         </TouchableOpacity>
       </View>
 
+      <TouchableOpacity
+        style={styles.chipMetas}
+        onPress={() => navigation.navigate('Metas')}
+      >
+        <Text style={styles.chipIcone}>🎯</Text>
+        <Text style={styles.chipTexto}>Minhas Metas (com IA)</Text>
+      </TouchableOpacity>
+
       <View style={styles.seletorMes}>
         <TouchableOpacity onPress={mesAnterior} style={styles.setaMes}>
           <Text style={styles.textoSeta}>◀</Text>
@@ -155,13 +162,18 @@ const styles = StyleSheet.create({
   card: { flex: 1, padding: 16, borderRadius: 8, marginHorizontal: 4, elevation: 2 },
   cardTitle: { fontSize: 14, color: '#555', marginBottom: 6 },
   cardValue: { fontSize: 18, fontWeight: 'bold', color: '#222' },
-  linksGerenciar: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 },
+  linksGerenciar: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
   chipGerenciar: {
     flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     paddingVertical: 10, borderRadius: 20, marginHorizontal: 4, borderWidth: 1.5,
   },
   chipRenda: { backgroundColor: '#e8f5e9', borderColor: '#2e7d32' },
   chipDespesa: { backgroundColor: '#fdecea', borderColor: '#c62828' },
+  chipMetas: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    paddingVertical: 10, borderRadius: 20, marginBottom: 16,
+    backgroundColor: '#ede7f6', borderWidth: 1.5, borderColor: '#5e35b1',
+  },
   chipIcone: { fontSize: 14, fontWeight: 'bold', marginRight: 6, color: '#333' },
   chipTexto: { fontSize: 13, fontWeight: '600', color: '#333' },
   seletorMes: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 16 },

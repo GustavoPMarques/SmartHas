@@ -11,6 +11,8 @@ import HomeScreen from '../screens/HomeScreen';
 import CadastrarTransacaoScreen from '../screens/CadastrarTransacao';
 import GerenciarTransacoesScreen from '../screens/GerenciarTransacoes';
 import EditarTransacaoScreen from '../screens/EditarTransacao';
+import MetasScreen from '../screens/MetasScreen';
+import CadastrarMetaScreen from '../screens/CadastrarMetaScreen';
 
 const Stack = createStackNavigator();
 
@@ -38,13 +40,13 @@ export default function MainNavigation() {
     <NavigationContainer>
       <Stack.Navigator>
         {!usuario ? (
-          // Não logado: só existe Login e Cadastro. Impossível acessar o resto do app.
+          
           <>
             <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
             <Stack.Screen name="Cadastro" component={CadastroScreen} options={{ title: 'Criar Conta' }} />
           </>
         ) : (
-          // Logado: usuarioId real (uid do Firebase) já injetado automaticamente na Home.
+          
           <>
             <Stack.Screen
               name="Home"
@@ -55,6 +57,8 @@ export default function MainNavigation() {
             <Stack.Screen name="CadastrarTransacao" component={CadastrarTransacaoScreen} options={{ title: 'Nova Transação' }} />
             <Stack.Screen name="GerenciarTransacoes" component={GerenciarTransacoesScreen} options={{ title: 'Gerenciar' }} />
             <Stack.Screen name="EditarTransacao" component={EditarTransacaoScreen} options={{ title: 'Editar Transação' }} />
+            <Stack.Screen name="Metas" component={MetasScreen} options={{ title: 'Minhas Metas' }} />
+            <Stack.Screen name="CadastrarMeta" component={CadastrarMetaScreen} options={{ title: 'Nova Meta' }} />
           </>
         )}
       </Stack.Navigator>

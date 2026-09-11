@@ -2,7 +2,9 @@ import { auth } from './firebaseConfig';
 
 // Defina o IP da sua máquina em um arquivo .env na raiz do mobile-app (veja .env.example).
 // Assim você não precisa editar o código toda vez que o IP da sua rede mudar.
-const API_URL = `${process.env.EXPO_PUBLIC_API_URL || 'http://192.168.15.3:8080'}/api/v1/transacoes`;
+const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.15.3:8080';
+const API_URL = `${BASE_URL}/api/v1/transacoes`;
+const METAS_URL = `${BASE_URL}/api/v1/metas`;
 
 
 async function getAuthHeaders() {
@@ -89,6 +91,62 @@ export async function excluirTransacao(id) {
   try {
     const headers = await getAuthHeaders();
     const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE', headers });
+    return response.ok;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+}
+
+
+
+export async function listarMetas() {
+  try {
+    const headers = await getAuthHeaders();
+    const response = await fetch(METAS_URL, { headers });
+    if (!response.ok) throw new Error('Erro ao listar metas');
+    return await response.json();
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+}
+
+export async function cadastrarMeta(dadosMeta) {
+  try {
+    const headers = await getAuthHeaders();
+    const response = await fetch(METAS_URL, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(dadosMeta),
+    });
+    if (!response.ok) throw new Error('Erro ao cadastrar meta');
+    return await response.json();
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export async function atualizarPrevisaoMeta(id) {
+  try {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${METAS_URL}/${id}/atualizar-previsao`, {
+      method: 'POST',
+      headers,
+    });
+    if (!response.ok) throw new Error('Erro ao atualizar previsão');
+    return await response.json();
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+export async function excluirMeta(id) {
+  try {
+    const headers = await getAuthHeaders();
+    const response = await fetch(`${METAS_URL}/${id}`, { method: 'DELETE', headers });
     return response.ok;
   } catch (error) {
     console.error(error);

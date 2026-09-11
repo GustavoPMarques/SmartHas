@@ -31,6 +31,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("erro", ex.getMessage()));
     }
 
+    @ExceptionHandler(MetaNaoEncontradaException.class)
+    public ResponseEntity<Map<String, String>> tratarMetaNaoEncontrada(MetaNaoEncontradaException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("erro", ex.getMessage()));
+    }
+
     @ExceptionHandler(AcessoNegadoException.class)
     public ResponseEntity<Map<String, String>> tratarAcessoNegado(AcessoNegadoException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("erro", ex.getMessage()));
