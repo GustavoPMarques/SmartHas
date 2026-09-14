@@ -1,6 +1,6 @@
 # Smart HAS — App Mobile
 
-Aplicativo React Native (Expo) para gestão de finanças pessoais: cadastro de rendas e despesas, resumo mensal, transações recorrentes e parceladas.
+Aplicativo React Native (Expo) para gestão de finanças pessoais: cadastro de rendas e despesas, resumo mensal, transações recorrentes e parceladas, além de metas de economia com previsão de prazo e dicas geradas por IA.
 
 ## Tecnologias
 
@@ -55,3 +55,9 @@ src/
 - Resumo mensal (saldo atual x saldo previsto)
 - Edição e exclusão de transações
 - Navegação por mês (setas para avançar/voltar)
+- Metas de economia:
+  - Cadastro de meta com nome e valor alvo
+  - Progresso calculado automaticamente a partir do histórico de transações (valor acumulado, % concluído, ritmo médio mensal, previsão de prazo)
+  - Previsão e dicas geradas por IA (Google Gemini via backend), com mensagem motivacional e até 3 sugestões práticas exibidas em um dropdown expansível
+  - Atualização manual da previsão sob demanda, com indicador de última atualização
+  - Card com destaque visual quando a meta é concluída
