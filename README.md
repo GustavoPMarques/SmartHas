@@ -2,9 +2,9 @@
 
 Sistema de gestão financeira pessoal (Smart Household Accounting System), desenvolvido como projeto acadêmico (FIAP). O projeto é dividido em três frentes que consomem a mesma API REST:
 
-- 📱 App mobile (React Native + Expo) — cadastro e acompanhamento de rendas/despesas
+- 📱 App mobile (React Native + Expo) — cadastro e acompanhamento de rendas/despesas, além de metas financeiras com previsão e dicas geradas por IA
 - 🌐 Painel web (Angular) — visualização de dados via dashboard e lista completa de transações
-- ⚙️ Backend (Spring Boot + Firebase) — API REST compartilhada pelos dois clientes
+- ⚙️ Backend (Spring Boot + Firebase) — API REST compartilhada pelos dois clientes, incluindo integração com a IA do Google (Gemini)
 
 ## Arquitetura
 
@@ -53,6 +53,14 @@ O painel web (Angular) é somente leitura, pensado como um painel de acompanhame
 - Lista completa de transações, filtrável por ano e por tipo
 - Não é possível cadastrar, editar ou excluir transações pelo navegador — isso é feito exclusivamente pelo app mobile
 
+## Metas financeiras com IA
+
+O app mobile permite criar metas de economia (ex: "Celular novo", "Viagem"). A cada meta o backend:
+
+- Calcula o progresso real com base no histórico de transações do usuário (economia acumulada, ritmo médio mensal, previsão de prazo) — **feito 100% em Java, sem envolver a IA nesse cálculo**
+- Usa o **Google Gemini** apenas para gerar, a partir dos números já calculados, uma mensagem motivacional curta e até 3 dicas práticas e personalizadas para a pessoa alcançar a meta mais rápido
+- Se o Gemini estiver indisponível (ex: pico de demanda, erro 503), o backend tenta novamente automaticamente (retry nativo do Spring Framework 7) e, se ainda assim falhar, devolve uma mensagem de fallback — a meta e o progresso continuam funcionando normalmente, sem dependência dura da IA
+
 ## Backend hospedado
 
 A API já está publicada e disponível publicamente:
@@ -77,7 +85,7 @@ Resumo rápido: como o backend já está hospedado, não é necessário rodar o 
 | Camada | Tecnologias |
 |---|---|
 | Mobile | React Native, Expo, React Navigation, Firebase Auth |
-| Backend | Java 21, Spring Boot 4, Firebase Admin SDK (Firestore), springdoc-openapi |
+| Backend | Java 21, Spring Boot 4, Firebase Admin SDK (Firestore), springdoc-openapi, Google Gemini API (previsões de metas) |
 | Web | Angular (standalone components, signals), Firebase Auth |
 | Infraestrutura | Docker, Render (deploy do backend) |
 
