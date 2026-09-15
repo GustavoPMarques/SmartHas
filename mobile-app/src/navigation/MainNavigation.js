@@ -38,7 +38,11 @@ export default function MainNavigation() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator
+        screenOptions={{
+          headerTintColor: '#000',
+        }}
+      >
         {!usuario ? (
           
           <>
