@@ -20,10 +20,29 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
+import br.com.fiap.smarthas.api.repository.OracleFinanceiroRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+
+
+
 @Service
 public class TransacaoService {
 
     private static final String COLLECTION_NAME = "transacoes";
+
+    private static final Logger log = LoggerFactory.getLogger(TransacaoService.class);
+
+    // POR **ENQUANTO** O ORACLE SÓ RODA LOCAL
+    // Pra ligar SmarthasApiApplication -> Edit Configurations -> Environment variables
+    // e colocar ORACLE_ENABLED=true junto com ORACLE_USER(rmxxxxxx) e ORACLE_PASSWORD(ddmmyy).
+    @Value("${oracle.enabled:false}")
+    private boolean oracleHabilitado;
+
+    @Autowired(required = false)
+    private OracleFinanceiroRepository oracle;
 
     public List<TransacaoResponseDTO> salvarTransacao(TransacaoRequestDTO dto) throws ExecutionException, InterruptedException {
         Firestore dbFirestore = FirestoreClient.getFirestore();
@@ -52,8 +71,23 @@ public class TransacaoService {
             respostas.add(converterParaDTO(transacao, LocalDate.parse(transacao.getData())));
         }
 
+        registrarNoOracle(dto);
         return respostas;
     }
+
+
+    private void registrarNoOracle(TransacaoRequestDTO dto) {
+        if (oracle == null || !oracleHabilitado) {
+            return;
+        }
+        try {
+            var r = oracle.registrarTransacao(dto);
+            log.info("Oracle: {} parcela(s) registrada(s), alerta={}", r.parcelasGeradas(), r.alerta());
+        } catch (Exception e) {
+            log.warn("Falha ao registrar no Oracle (o app segue normalmente): {}", e.getMessage());
+        }
+    }
+
 
     public List<TransacaoResponseDTO> listarPorMes(String usuarioId, int ano, int mes) throws ExecutionException, InterruptedException {
         Firestore dbFirestore = FirestoreClient.getFirestore();
