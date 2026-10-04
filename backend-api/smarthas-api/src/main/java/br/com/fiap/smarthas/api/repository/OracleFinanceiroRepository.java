@@ -7,12 +7,18 @@ import org.springframework.jdbc.core.simple.SimpleJdbcCall;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.sql.CallableStatement;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-
-//Camada de acesso ao Oracle
-
+/**
+ * Camada de acesso ao Oracle
+ */
 @Repository
 public class OracleFinanceiroRepository {
 
@@ -78,5 +84,51 @@ public class OracleFinanceiroRepository {
                 WHERE  id_usuario = ?
                 ORDER  BY dt_alerta DESC, id_alerta DESC
                 """, usuarioId);
+    }
+
+
+    public List<Map<String, Object>> relatorioCategorias(String usuarioId, int ano, int mes) {
+        return jdbc.execute((Connection con) -> {
+            List<Map<String, Object>> linhas = new ArrayList<>();
+            try (CallableStatement cs = con.prepareCall("{call prc_shas_relatorio_categorias(?, ?, ?, ?)}")) {
+                cs.setString(1, usuarioId);
+                cs.setInt(2, ano);
+                cs.setInt(3, mes);
+                cs.registerOutParameter(4, Types.REF_CURSOR);
+                cs.execute();
+                try (ResultSet rs = (ResultSet) cs.getObject(4)) {
+                    while (rs.next()) {
+                        Map<String, Object> linha = new LinkedHashMap<>();
+                        linha.put("categoria", rs.getString("DS_CATEGORIA"));
+                        linha.put("lancamentos", rs.getInt("QTD_LANCAMENTOS"));
+                        linha.put("total", rs.getBigDecimal("TOTAL"));
+                        linha.put("percentual", rs.getBigDecimal("PERC_DO_TOTAL"));
+                        linhas.add(linha);
+                    }
+                }
+            }
+            return linhas;
+        });
+    }
+
+
+    public List<Map<String, Object>> progressoMetas(String usuarioId) {
+        return jdbc.queryForList("""
+                SELECT id_meta, nm_meta, vl_alvo, fun_shas_progresso_meta(id_meta) AS progresso
+                FROM   shas_meta
+                WHERE  id_usuario = ?
+                ORDER  BY dt_criacao DESC, nm_meta
+                """, usuarioId);
+    }
+
+
+    public void registrarMeta(String id, String usuarioId, String nome, double valorAlvo) {
+        jdbc.update("""
+                MERGE INTO shas_usuario u
+                USING (SELECT ? AS id FROM dual) s ON (u.id_usuario = s.id)
+                WHEN NOT MATCHED THEN INSERT (id_usuario) VALUES (s.id)
+                """, usuarioId);
+        jdbc.update("INSERT INTO shas_meta (id_meta, id_usuario, nm_meta, vl_alvo) VALUES (?, ?, ?, ?)",
+                id, usuarioId, nome, BigDecimal.valueOf(valorAlvo));
     }
 }

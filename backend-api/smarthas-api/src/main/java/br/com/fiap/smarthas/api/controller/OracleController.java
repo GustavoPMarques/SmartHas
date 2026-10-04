@@ -22,8 +22,11 @@ public class OracleController {
 
     private static final Logger log = LoggerFactory.getLogger(OracleController.class);
 
-    /** Alerta gerado pelas procedures PL/SQL. */
+
     public record AlertaDTO(long id, String tipo, String mensagem, int ano, int mes, String data) {}
+
+
+    public record MetaProgressoDTO(String id, String nome, BigDecimal valorAlvo, BigDecimal progresso) {}
 
     @Autowired
     private OracleFinanceiroRepository oracle;
@@ -68,6 +71,24 @@ public class OracleController {
     }
 
 
+    @GetMapping("/categorias/{ano}/{mes}")
+    public ResponseEntity<?> categorias(
+            @PathVariable int ano, @PathVariable int mes, HttpServletRequest request) {
+        if (mes < 1 || mes > 12) {
+            return resposta(HttpStatus.BAD_REQUEST, "erro", "Mês deve estar entre 1 e 12");
+        }
+        return ResponseEntity.ok(oracle.relatorioCategorias(usuarioAutenticado(request), ano, mes));
+    }
+
+
+    @GetMapping("/metas/progresso")
+    public ResponseEntity<List<MetaProgressoDTO>> progressoMetas(HttpServletRequest request) {
+        List<MetaProgressoDTO> lista = oracle.progressoMetas(usuarioAutenticado(request))
+                .stream().map(this::paraMetaDTO).toList();
+        return ResponseEntity.ok(lista);
+    }
+
+
     @ExceptionHandler(DataAccessException.class)
     public ResponseEntity<Map<String, Object>> oracleIndisponivel(DataAccessException ex) {
         log.warn("Erro ao acessar o Oracle: {}", ex.getMostSpecificCause().getMessage());
@@ -87,6 +108,18 @@ public class OracleController {
                 ((Number) m.get("NR_ANO")).intValue(),
                 ((Number) m.get("NR_MES")).intValue(),
                 data);
+    }
+
+    private MetaProgressoDTO paraMetaDTO(Map<String, Object> m) {
+        return new MetaProgressoDTO(
+                (String) m.get("ID_META"),
+                (String) m.get("NM_META"),
+                toBigDecimal(m.get("VL_ALVO")),
+                toBigDecimal(m.get("PROGRESSO")));
+    }
+
+    private static BigDecimal toBigDecimal(Object o) {
+        return o instanceof BigDecimal b ? b : new BigDecimal(String.valueOf(o));
     }
 
     private static ResponseEntity<Map<String, Object>> resposta(HttpStatus status, String chave, Object valor) {
