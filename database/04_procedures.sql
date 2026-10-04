@@ -1,10 +1,11 @@
 -- =====================================================================
--- Executar DEPOIS do 03_functions.sql.
+-- 04_procedures.sql: procedures PL/SQL (3 procedures)
+-- Execute DEPOIS do 03_functions.sql
 -- =====================================================================
 SET SERVEROUTPUT ON;
 
 -- ---------------------------------------------------------------------
--- PROCEDURE 1: registra a transacao, gera as parcelas
+-- PROCEDURE 1 : registra a transacao, gera as parcelas
 -- ---------------------------------------------------------------------
 CREATE OR REPLACE PROCEDURE prc_shas_registra_transacao (
   p_id_usuario  IN  shas_usuario.id_usuario%TYPE,
@@ -25,7 +26,7 @@ IS
   v_ano         NUMBER;
   v_mes         NUMBER;
 BEGIN
-  
+
   IF p_id_usuario IS NULL OR p_data IS NULL THEN
     RAISE_APPLICATION_ERROR(-20013, 'Usuario e data sao obrigatorios');
   END IF;
@@ -42,13 +43,13 @@ BEGIN
   v_ano := EXTRACT(YEAR  FROM p_data);
   v_mes := EXTRACT(MONTH FROM p_data);
 
-  
+
   MERGE INTO shas_usuario u
   USING (SELECT p_id_usuario AS id FROM dual) s
   ON (u.id_usuario = s.id)
   WHEN NOT MATCHED THEN INSERT (id_usuario) VALUES (s.id);
 
-  
+
   v_vl_parcela := ROUND(p_valor / v_parcelas, 2);
   FOR i IN 1..v_parcelas LOOP
     v_titulo := CASE WHEN v_parcelas > 1
@@ -64,7 +65,7 @@ BEGIN
   END LOOP;
   p_qtd_gerada := v_parcelas;
 
-  
+
   v_saldo := fun_shas_saldo_previsto(p_id_usuario, v_ano, v_mes);
   IF v_saldo < 0 THEN
     INSERT INTO shas_alerta (id_usuario, nr_ano, nr_mes, tp_alerta, ds_mensagem)
@@ -102,7 +103,6 @@ IS
   v_rendas   NUMBER;
   v_despesas NUMBER;
   v_total    NUMBER := 0;
-
 
   PROCEDURE grava (l_id VARCHAR2, l_tipo VARCHAR2, l_msg VARCHAR2) IS
     v_qtd NUMBER;
@@ -160,7 +160,44 @@ END prc_shas_gera_alertas_mensais;
 /
 
 -- ---------------------------------------------------------------------
--- TESTES 
+-- PROCEDURE 3: despesas do mes por categoria
+-- ---------------------------------------------------------------------
+CREATE OR REPLACE PROCEDURE prc_shas_relatorio_categorias (
+  p_id_usuario IN  shas_usuario.id_usuario%TYPE,
+  p_ano        IN  NUMBER,
+  p_mes        IN  NUMBER,
+  p_relatorio  OUT SYS_REFCURSOR)
+IS
+  v_ini DATE;
+BEGIN
+  IF p_mes NOT BETWEEN 1 AND 12 THEN
+    RAISE_APPLICATION_ERROR(-20050, 'Mes invalido: ' || p_mes);
+  END IF;
+  v_ini := TO_DATE(p_ano || '-' || LPAD(p_mes, 2, '0') || '-01', 'YYYY-MM-DD');
+
+  OPEN p_relatorio FOR
+    SELECT ds_categoria,
+           COUNT(*)          AS qtd_lancamentos,
+           SUM(vl_transacao) AS total,
+           ROUND(SUM(vl_transacao) * 100 / SUM(SUM(vl_transacao)) OVER (), 1) AS perc_do_total
+    FROM   shas_transacao
+    WHERE  id_usuario = p_id_usuario
+    AND    tp_transacao = 'DESPESA'
+    AND  ( (fl_recorrente = 'N' AND dt_transacao >= v_ini AND dt_transacao < ADD_MONTHS(v_ini, 1))
+        OR (fl_recorrente = 'S' AND dt_transacao < ADD_MONTHS(v_ini, 1)) )
+    GROUP  BY ds_categoria
+    ORDER  BY total DESC;
+EXCEPTION
+  WHEN OTHERS THEN
+    IF SQLCODE BETWEEN -20999 AND -20000 THEN
+      RAISE;
+    END IF;
+    RAISE_APPLICATION_ERROR(-20059, 'Erro no relatorio por categoria: ' || SQLERRM);
+END prc_shas_relatorio_categorias;
+/
+
+-- ---------------------------------------------------------------------
+-- TESTES (rode nesta ordem)
 -- ---------------------------------------------------------------------
 
 -- Teste 1: Ana compra um notebook parcelado em 10x (esperado: 10 parcelas, alerta OK)
@@ -213,12 +250,41 @@ BEGIN
 END;
 /
 
+-- Teste 6: relatorio de despesas por categoria da Ana em out/2026
+DECLARE
+  v_rc    SYS_REFCURSOR;
+  v_cat   shas_transacao.ds_categoria%TYPE;
+  v_qtd   NUMBER;
+  v_total NUMBER;
+  v_perc  NUMBER;
+BEGIN
+  prc_shas_relatorio_categorias('uid-ana-001', 2026, 10, v_rc);
+  DBMS_OUTPUT.PUT_LINE(RPAD('CATEGORIA', 14) || RPAD('QTD', 6) || RPAD('TOTAL', 12) || '% DO TOTAL');
+  LOOP
+    FETCH v_rc INTO v_cat, v_qtd, v_total, v_perc;
+    EXIT WHEN v_rc%NOTFOUND;
+    DBMS_OUTPUT.PUT_LINE(RPAD(v_cat, 14) || RPAD(v_qtd, 6) || RPAD(TO_CHAR(v_total, 'FM999990D00'), 12) || v_perc || '%');
+  END LOOP;
+  CLOSE v_rc;
+END;
+/
+
+-- Teste 7: mes invalido no relatorio (esperado: erro ORA-20050)
+DECLARE
+  v_rc SYS_REFCURSOR;
+BEGIN
+  prc_shas_relatorio_categorias('uid-ana-001', 2026, 13, v_rc);
+END;
+/
+
 -- Resultado: alertas gerados
 SELECT a.id_alerta, u.nm_usuario, a.tp_alerta, a.ds_mensagem
 FROM   shas_alerta a JOIN shas_usuario u ON u.id_usuario = a.id_usuario
 ORDER  BY a.id_alerta;
 
--- para desfazer os testes e poder rodar de novo, descomente:
--- DELETE FROM shas_alerta;
--- DELETE FROM shas_transacao WHERE ds_titulo LIKE 'Notebook%' OR ds_titulo LIKE 'Celular%';
+-- para desfazer os testes e poder rodar de novo, descomente.
+-- Limpa so os usuarios de teste ('uid-...');
+-- DELETE FROM shas_alerta WHERE id_usuario LIKE 'uid-%';
+-- DELETE FROM shas_transacao
+--  WHERE id_usuario LIKE 'uid-%' AND (ds_titulo LIKE 'Notebook%' OR ds_titulo LIKE 'Celular%');
 -- COMMIT;
