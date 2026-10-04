@@ -16,7 +16,7 @@ Esta pasta traz a camada de banco **Oracle PL/SQL** do Smart HAS: modelo de dado
 
 ## Modelo de dados
 
-![DER](modelo/DER-SmartHas.png)
+![DER](modelo/DER - SmartHas.png)
 
 | Tabela | Descrição |
 |---|---|
