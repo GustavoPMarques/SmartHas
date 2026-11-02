@@ -1,8 +1,8 @@
 -- para recriar do zero:
--- DROP TABLE shas_alerta    CASCADE CONSTRAINTS PURGE;
--- DROP TABLE shas_meta      CASCADE CONSTRAINTS PURGE;
--- DROP TABLE shas_transacao CASCADE CONSTRAINTS PURGE;
--- DROP TABLE shas_usuario   CASCADE CONSTRAINTS PURGE;
+--DROP TABLE shas_alerta    CASCADE CONSTRAINTS PURGE;
+--DROP TABLE shas_meta      CASCADE CONSTRAINTS PURGE;
+--DROP TABLE shas_transacao CASCADE CONSTRAINTS PURGE;
+--DROP TABLE shas_usuario   CASCADE CONSTRAINTS PURGE;
 
 -- Usuário (chave = UID do Firebase)
 CREATE TABLE shas_usuario (
