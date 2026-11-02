@@ -1,7 +1,6 @@
 name: CI/CD Smart HAS
 
 
-
 on:
   push:
     branches: [main]
@@ -37,7 +36,7 @@ jobs:
           java-version: '21'
           cache: maven
 
-      
+
       - name: Dar permissao ao Maven Wrapper
         run: chmod +x mvnw
 
@@ -93,3 +92,57 @@ jobs:
           path: backend-api/smarthas-api/target/*.jar
           if-no-files-found: error
           retention-days: 14
+
+  oracle-db:
+    name: Oracle (scripts e verificacoes)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      ORACLE_PASSWORD: CiOracle2026x
+      APP_PASSWORD: CiSmartHas2026x
+
+    steps:
+      - name: Baixar o codigo
+        uses: actions/checkout@v4
+
+      - name: Subir o Oracle Free (container)
+        run: |
+          docker run -d --name oracle-ci \
+            -e ORACLE_PASSWORD="$ORACLE_PASSWORD" \
+            -e APP_USER=smarthas \
+            -e APP_USER_PASSWORD="$APP_PASSWORD" \
+            gvenzl/oracle-free:23-slim-faststart
+
+      - name: Executar scripts 01 a 07 e verificacoes automaticas
+        run: bash database/ci/run_ci.sh
+
+      - name: Resumo das verificacoes do Oracle
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Oracle: verificacoes automaticas"
+            echo
+            if [ -f ci-logs/assert_oracle.log ]; then
+              echo '```'
+              grep -E '^\[(OK|FALHA|ERRO)\]|^RESULTADO' ci-logs/assert_oracle.log || echo "sem saida"
+              echo '```'
+            else
+              echo "As verificacoes nao chegaram a executar. Veja os logs dos scripts nos artefatos."
+            fi
+            echo
+            echo "Logs completos de cada script: artefato **logs-oracle**."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publicar logs dos scripts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-oracle
+          path: ci-logs/
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Logs do container (somente se falhar)
+        if: failure()
+        run: docker logs --tail 80 oracle-ci || true
