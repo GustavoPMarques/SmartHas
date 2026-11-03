@@ -36,7 +36,6 @@ jobs:
           java-version: '21'
           cache: maven
 
-
       - name: Dar permissao ao Maven Wrapper
         run: chmod +x mvnw
 
@@ -125,7 +124,7 @@ jobs:
             echo
             if [ -f ci-logs/assert_oracle.log ]; then
               echo '```'
-              grep -E '^\[(OK|FALHA|ERRO)\]|^RESULTADO' ci-logs/assert_oracle.log || echo "sem saida"
+              grep -E '^\[(OK|FALHA|ERRO|INFO)\]|^RESULTADO' ci-logs/assert_oracle.log || echo "sem saida"
               echo '```'
             else
               echo "As verificacoes nao chegaram a executar. Veja os logs dos scripts nos artefatos."

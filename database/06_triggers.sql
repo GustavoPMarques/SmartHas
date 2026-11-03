@@ -1,12 +1,9 @@
 -- =====================================================================
--- 06_triggers.sql: triggers do Smart HAS (Etapa 2)
--- Execute DEPOIS do 05_packages.sql, como SCRIPT (F5).
+-- 06_triggers.sql: triggers do Smart HAS
+-- Execute DEPOIS do 05_packages.sql
 -- =====================================================================
 SET SERVEROUTPUT ON;
 
--- =====================================================================
--- 1) Tabela de log de auditoria
--- =====================================================================
 DECLARE
   v_qtd NUMBER;
 BEGIN
@@ -39,9 +36,6 @@ END;
 
 COMMENT ON TABLE shas_log_transacao IS 'Auditoria de INSERT/UPDATE/DELETE em SHAS_TRANSACAO (preenchida pela trigger TRG_SHAS_AUDITA_TRANSACAO)';
 
--- =====================================================================
--- 2) TRG_SHAS_AUDITA_TRANSACAO
--- =====================================================================
 CREATE OR REPLACE TRIGGER trg_shas_audita_transacao
 AFTER INSERT OR UPDATE OR DELETE ON shas_transacao
 FOR EACH ROW
@@ -73,9 +67,6 @@ BEGIN
 END trg_shas_audita_transacao;
 /
 
--- =====================================================================
--- status do alerta
--- =====================================================================
 DECLARE
   v_qtd NUMBER;
 BEGIN
@@ -96,9 +87,6 @@ END;
 COMMENT ON COLUMN shas_alerta.st_alerta  IS 'Status do alerta: NOVO ou LIDO';
 COMMENT ON COLUMN shas_alerta.dt_leitura IS 'Data/hora em que o alerta foi marcado como LIDO (preenchida pela trigger)';
 
--- =====================================================================
--- 4) TRG_SHAS_ALERTA_STATUS
--- =====================================================================
 CREATE OR REPLACE TRIGGER trg_shas_alerta_status
 BEFORE UPDATE OF st_alerta ON shas_alerta
 FOR EACH ROW
@@ -109,6 +97,12 @@ BEGIN
     :NEW.dt_leitura := NULL;
   END IF;
 END trg_shas_alerta_status;
+/
+
+BEGIN
+  DBMS_UTILITY.COMPILE_SCHEMA(schema => USER, compile_all => FALSE);
+  DBMS_OUTPUT.PUT_LINE('Objetos dependentes recompilados.');
+END;
 /
 
 -- =====================================================================
@@ -132,9 +126,6 @@ SELECT id_alerta, tp_alerta, st_alerta, dt_leitura FROM shas_alerta ORDER BY id_
 
 -- =====================================================================
 -- TESTE DA TRIGGER DE AUDITORIA
--- Faz INSERT, UPDATE e DELETE de uma transacao de teste, mostra o log e
--- termina com ROLLBACK, entao NAO deixa dados no banco.
--- (rode o bloco inteiro, do INSERT ate o ROLLBACK, de uma vez)
 -- =====================================================================
 INSERT INTO shas_transacao
   (id_transacao, id_usuario, ds_titulo, vl_transacao, dt_transacao, tp_transacao, ds_categoria)
@@ -160,7 +151,7 @@ ROLLBACK;
 SELECT COUNT(*) AS logs_restantes FROM shas_log_transacao WHERE id_transacao = 'teste-trg-001';
 
 -- =====================================================================
--- TESTE DA TRIGGER DE STATUS DO ALERTA (tambem termina com ROLLBACK)
+-- TESTE DA TRIGGER DE STATUS DO ALERTA
 -- =====================================================================
 INSERT INTO shas_alerta (id_usuario, nr_ano, nr_mes, tp_alerta, ds_mensagem)
 VALUES ('uid-ana-001', 2026, 10, 'TESTE_TRG', 'Alerta de teste da trigger');

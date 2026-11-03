@@ -54,9 +54,7 @@ DECLARE
 
 BEGIN
   BEGIN
-    -- -----------------------------------------------------------------
-    -- A) ESTRUTURA
-    -- -----------------------------------------------------------------
+
     check_('3 packages + 3 package bodies VALID',
            cnt(q'[SELECT COUNT(*) FROM user_objects
                   WHERE object_name IN ('PKG_SHAS_CALCULO','PKG_SHAS_OPERACAO','PKG_SHAS_RELATORIO')
@@ -65,6 +63,13 @@ BEGIN
            cnt(q'[SELECT COUNT(*) FROM user_triggers
                   WHERE trigger_name IN ('TRG_SHAS_AUDITA_TRANSACAO','TRG_SHAS_ALERTA_STATUS')
                   AND status = 'ENABLED']') = 2);
+    FOR o IN (SELECT object_type, object_name, status
+              FROM   user_objects
+              WHERE  status <> 'VALID'
+              ORDER  BY object_type, object_name) LOOP
+      DBMS_OUTPUT.PUT_LINE('[INFO]  objeto fora de VALID: ' || o.object_type || ' '
+                           || o.object_name || ' (' || o.status || ')');
+    END LOOP;
     check_('nenhum objeto INVALID no schema',
            cnt(q'[SELECT COUNT(*) FROM user_objects WHERE status <> 'VALID']') = 0);
     check_('USER_ERRORS vazio (sem erro de compilacao)',
@@ -75,17 +80,12 @@ BEGIN
            cnt(q'[SELECT COUNT(*) FROM user_tab_columns
                   WHERE table_name = 'SHAS_ALERTA' AND column_name IN ('ST_ALERTA','DT_LEITURA')]') = 2);
 
-    -- -----------------------------------------------------------------
-    -- B) CARGA DE DADOS (02_dados.sql)
-    -- -----------------------------------------------------------------
     check_('3 usuarios carregados', cnt('SELECT COUNT(*) FROM shas_usuario') = 3);
     check_('3 metas carregadas',    cnt('SELECT COUNT(*) FROM shas_meta') = 3);
     check_('pelo menos 165 transacoes carregadas',
            cnt('SELECT COUNT(*) FROM shas_transacao') >= 165);
 
-    -- -----------------------------------------------------------------
-    -- C)rotina solta x package
-    -- -----------------------------------------------------------------
+
     FOR u IN (SELECT id_usuario FROM shas_usuario ORDER BY id_usuario) LOOP
       check_('saldo previsto solta = package (' || u.id_usuario || ')',
              fun_shas_saldo_previsto(u.id_usuario, v_ano, v_mes)
@@ -99,9 +99,7 @@ BEGIN
              fun_shas_progresso_meta(m.id_meta) = pkg_shas_calculo.fun_progresso_meta(m.id_meta));
     END LOOP;
 
-    -- -----------------------------------------------------------------
-    -- D) CENARIO COMPLETO com o usuario de teste (packages + triggers)
-    -- -----------------------------------------------------------------
+
     limpa;
     SELECT NVL(MAX(id_alerta), 0) INTO v_max_alerta FROM shas_alerta;
 
@@ -177,9 +175,6 @@ BEGIN
     WHERE  id_usuario = c_user AND tp_alerta = 'SALDO_NEGATIVO';
     check_('D7 trigger de status: NOVO limpa DT_LEITURA', v_dt IS NULL);
 
-    -- -----------------------------------------------------------------
-    -- E) DYNAMIC SQL
-    -- -----------------------------------------------------------------
     pkg_shas_relatorio.prc_resumo_dinamico(c_user, v_ano, v_mes, 'TIPO', NULL, 'TOTAL', v_rc);
     v_n := 0;
     LOOP
@@ -211,9 +206,6 @@ BEGIN
         check_('E3 tabela USER_TABLES rejeitada com ORA-20055', SQLCODE = -20055);
     END;
 
-    -- -----------------------------------------------------------------
-    -- F) LIMPEZA
-    -- -----------------------------------------------------------------
     limpa;
     check_('F limpeza: nenhum dado do usuario de teste restou',
            cnt(q'[SELECT COUNT(*) FROM shas_transacao WHERE id_usuario = 'uid-ci-001']')
