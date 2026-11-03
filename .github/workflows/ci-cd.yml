@@ -156,6 +156,8 @@ jobs:
       packages: write
     env:
       PUBLICAR: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      DOCKER_BUILD_SUMMARY: "false"
+      DOCKER_BUILD_RECORD_UPLOAD: "false"
 
     steps:
       - name: Baixar o codigo
@@ -176,6 +178,7 @@ jobs:
           tags: smarthas-api:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
 
       - name: Varredura de vulnerabilidades (Trivy)
         continue-on-error: true
@@ -242,3 +245,147 @@ jobs:
             ${{ env.IMAGE }}:${{ github.sha }}
             ${{ env.IMAGE }}:latest
           cache-from: type=gha
+
+  deploy:
+    name: Deploy (Oracle FIAP + Render)
+    runs-on: ubuntu-latest
+    needs: [build-test, oracle-db, docker-build]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    timeout-minutes: 25
+    environment:
+      name: production
+      url: ${{ vars.APP_URL || 'https://smarthas.onrender.com' }}
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    env:
+      ORACLE_USER: ${{ secrets.ORACLE_USER }}
+      ORACLE_PASSWORD: ${{ secrets.ORACLE_PASSWORD }}
+      RENDER_DEPLOY_HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+      ORACLE_HOST: ${{ vars.ORACLE_HOST || 'oracle.fiap.com.br' }}
+      ORACLE_PORT: ${{ vars.ORACLE_PORT || '1521' }}
+      ORACLE_SID: ${{ vars.ORACLE_SID || 'ORCL' }}
+      ORACLE_DEPLOY: ${{ vars.ORACLE_DEPLOY || 'true' }}
+      APP_URL: ${{ vars.APP_URL || 'https://smarthas.onrender.com' }}
+
+    steps:
+      - name: Baixar o codigo
+        uses: actions/checkout@v4
+
+      - name: Preparar o Java (necessario para o SQLcl)
+        if: env.ORACLE_DEPLOY == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Aplicar os scripts 05 e 06 no Oracle da FIAP
+        id: oracle
+        if: env.ORACLE_DEPLOY == 'true'
+        shell: bash
+        run: |
+          if [ -z "$ORACLE_USER" ] || [ -z "$ORACLE_PASSWORD" ]; then
+            echo "::error::Secrets ORACLE_USER e ORACLE_PASSWORD nao configurados no ambiente production"
+            exit 1
+          fi
+          mkdir -p ci-logs
+          curl -fsSL -o sqlcl.zip https://download.oracle.com/otn_software/java/sqldeveloper/sqlcl-latest.zip
+          unzip -q sqlcl.zip
+          DESCR="(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=${ORACLE_HOST})(PORT=${ORACLE_PORT}))(CONNECT_DATA=(SID=${ORACLE_SID})))"
+          CONN="${ORACLE_USER}/${ORACLE_PASSWORD}@${DESCR}"
+
+          echo "Testando a conexao com ${ORACLE_HOST}:${ORACLE_PORT}/${ORACLE_SID}..."
+          out=$(printf "SELECT 'CONEXAO_OK' FROM dual;\nEXIT\n" | timeout 120 sqlcl/bin/sql -L -S "$CONN" 2>&1 || true)
+          echo "$out"
+          if ! echo "$out" | grep -q CONEXAO_OK; then
+            echo "::error::Nao foi possivel conectar no Oracle (host inacessivel a partir do GitHub ou credenciais invalidas)"
+            exit 1
+          fi
+
+          run_sql() {
+            local script="$1" name
+            name="$(basename "${script%.sql}")"
+            echo "::group::${script}"
+            {
+              echo "SET DEFINE OFF"
+              echo "SET SQLBLANKLINES ON"
+              echo "SET SERVEROUTPUT ON SIZE UNLIMITED"
+              echo "@${script}"
+              echo "EXIT"
+            } | timeout 300 sqlcl/bin/sql -L -S "$CONN" | tee "ci-logs/deploy_${name}.log"
+            echo "::endgroup::"
+          }
+
+          run_sql database/05_packages.sql
+          run_sql database/06_triggers.sql
+          run_sql database/ci/verify_deploy.sql
+
+          # garante que a verificacao realmente rodou e nao teve falhas
+          grep -Eq "RESULTADO: [0-9]+ verificacoes, 0 falha" ci-logs/deploy_verify_deploy.log
+
+      - name: Disparar o deploy do back-end no Render
+        id: render
+        shell: bash
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK_URL" ]; then
+            echo "::error::Secret RENDER_DEPLOY_HOOK_URL nao configurado no ambiente production"
+            exit 1
+          fi
+          code=$(curl -sS -o render-response.txt -w '%{http_code}' -X POST "$RENDER_DEPLOY_HOOK_URL")
+          echo "Resposta do Render: HTTP $code"
+          cat render-response.txt || true
+          echo
+          [ "$code" -ge 200 ] && [ "$code" -lt 300 ]
+
+      - name: Teste de fumaca (aguarda o servico responder)
+        id: smoke
+        shell: bash
+        run: |
+          echo "Aguardando o Render publicar a nova versao (o plano gratuito pode demorar)..."
+          sleep 90
+          for i in $(seq 1 30); do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 "$APP_URL/" || true)
+            code=${code:-000}
+            echo "tentativa $i: HTTP $code"
+            # qualquer resposta abaixo de 500 (inclusive 401/403/404) prova que o servico esta de pe
+            if [ "$code" -ge 200 ] && [ "$code" -lt 500 ]; then
+              echo "Servico respondendo em $APP_URL"
+              exit 0
+            fi
+            sleep 20
+          done
+          echo "::error::O servico nao respondeu a tempo em $APP_URL"
+          exit 1
+
+      - name: Resumo do deploy
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## Deploy em producao"
+            echo
+            echo "| Etapa | Resultado |"
+            echo "|---|---|"
+            echo "| Oracle da FIAP (scripts 05 e 06 + verificacao) | ${{ steps.oracle.outcome }} |"
+            echo "| Render (deploy hook) | ${{ steps.render.outcome }} |"
+            echo "| Teste de fumaca | ${{ steps.smoke.outcome }} |"
+            echo
+            echo "- Commit: \`${GITHUB_SHA}\`"
+            echo "- Aplicacao: $APP_URL"
+            if [ -f ci-logs/deploy_verify_deploy.log ]; then
+              echo
+              echo "### Verificacao do Oracle apos o deploy"
+              echo '```'
+              grep -E '^\[(OK|FALHA)\]|^RESULTADO' ci-logs/deploy_verify_deploy.log || true
+              echo '```'
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publicar logs do deploy no Oracle
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: logs-deploy-oracle
+          path: ci-logs/
+          if-no-files-found: ignore
+          retention-days: 30
